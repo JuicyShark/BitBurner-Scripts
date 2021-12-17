@@ -7,11 +7,6 @@ const argsSchema = [
   ['subfolder', ''], // Can be set to download to a sub-folder that is not part of the remote repository structure
 ];
 
-export function autocomplete(data, _) {
-  data.flags(argsSchema);
-  return [];
-}
-
 /** @param {NS} ns 
 * Will try to download a fresh version of every file on the current server.
 * You are responsible for:
