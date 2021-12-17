@@ -1,81 +1,64 @@
-"use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.main = void 0;
 let Manager = { networks: [] };
+
 /** @param {import(".").NS } ns */
-function main(ns) {
-    return __awaiter(this, void 0, void 0, function* () {
-        ns.print("Starting Script Manager");
-        while (true) {
-            init(ns);
-            for (let i in Manager.networks) {
-                let network = Manager.networks[i];
-                if (network.hasAdminRights) {
-                    let type = checkThresholds(network);
-                    ns.print(`is script running on: ${network.hostname}? ${ns.isRunning("basicHack.ns", "home", network.hostname, type)}`);
-                    let running = ns.isRunning("basicHack.ns", "home", network.hostname, type);
-                    if (!running) {
-                        //ns.run("basicHack.ns", 1, network.hostname, type)
-                        //await createBasicHackScript(ns, "basicHack.ns", 1, network.hostname, type)
-                        ns.print(`line before promise`);
-                        yield new Promise(resolve => setTimeout(resolve, 1500))
-                            .then(ns.run("basicHack.ns", 1, network.hostname, type));
-                        reject => ns.print(`promise was rejected ${reject}`);
-                        ns.print(`time to promise more. good luck script on ${network.hostname}`);
-                    }
-                    else {
-                        yield new Promise(resolve => setTimeout(resolve, 1500)).then(ns.print(`skipping ${network.hostname} as running = ${running}`));
-                        continue;
-                    }
-                }
-                else if (network.openPortCount >= network.numOpenPortsRequired)
-                    ns.nuke(network.hostname);
-                else if (ns.fileExists("BruteSSH.exe", "home"))
-                    ns.brutessh(network.hostname);
-                else {
-                    ns.print(`reached end of logic. skipping current element`);
-                    continue;
-                }
-            }
-            ;
-        }
-    });
+export async function main(ns) {
+	ns.print("Starting Script Manager");
+	while (true) {
+		init(ns)
+		for (let i in Manager.networks) {
+			let network = Manager.networks[i]
+			if (network.hasAdminRights) {
+				let type = checkThresholds(network)
+				ns.print(`is script running on: ${network.hostname}? ${ns.isRunning("basicHack.ns", "home", network.hostname, type)}`)
+				 let running = ns.isRunning("basicHack.ns", "home", network.hostname, type);
+				if (!running) {
+					//ns.run("basicHack.ns", 1, network.hostname, type)
+					//await createBasicHackScript(ns, "basicHack.ns", 1, network.hostname, type)
+					ns.print(`line before promise`)
+					await new Promise(resolve => setTimeout(resolve, 1500))
+					.then(ns.run("basicHack.ns", 1, network.hostname, type))
+					reject => ns.print(`promise was rejected ${reject}`);
+					ns.print(`time to promise more. good luck script on ${network.hostname}`)
+				} else {
+					await new Promise(resolve => setTimeout(resolve, 1500)).then(ns.print(`skipping ${network.hostname} as running = ${running}`))
+					continue
+				}
+			} else if (network.openPortCount >= network.numOpenPortsRequired)
+				ns.nuke(network.hostname);
+			else if (ns.fileExists("BruteSSH.exe", "home"))
+				ns.brutessh(network.hostname);
+			else {
+				ns.print(`reached end of logic. skipping current element`)
+				continue
+			}
+		};
+	}
 }
-exports.main = main;
+
 /** @param {NS} ns **/
 function init(ns) {
-    Manager.networks = findNetworks(ns, ns.scan("home"));
+	Manager.networks = findNetworks(ns, ns.scan("home"))
+	
 }
+
 /** @param {NS} ns **/
 function findNetworks(ns, networks) {
-    for (let i in networks) {
-        Manager.networks[i] = Object.assign({}, ns.getServer(networks[i]));
-        if (Manager.networks[i].running == null) {
-            Manager.networks[i].running = false;
-        }
-    }
-    return Manager.networks;
+	for (let i in networks) {
+		Manager.networks[i] = Object.assign({}, ns.getServer(networks[i]))
+		if(Manager.networks[i].running == null){
+			Manager.networks[i].running = false
+		}
+	}
+	return Manager.networks
 }
 function checkThresholds(network) {
-    let hackType;
-    if (network.hackDifficulty > network.minDifficulty * 1.25) {
-        hackType = 'Weaken';
-    }
-    else if (network.moneyAvailable < network.moneyMax * 0.75) {
-        hackType = "Grow";
-    }
-    else {
-        hackType = "Hack";
-    }
-    return hackType;
+	let hackType;
+	if (network.hackDifficulty > network.minDifficulty * 1.25) {
+		hackType = 'Weaken'
+	} else if (network.moneyAvailable < network.moneyMax * 0.75) {
+		hackType = "Grow"
+	} else {
+		hackType = "Hack"
+	}
+	return hackType
 }
-//# sourceMappingURL=basicHackManager.js.map
