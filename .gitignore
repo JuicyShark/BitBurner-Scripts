@@ -1,0 +1,6 @@
+
+*.ts
+BitBurnerWorkspace.code-workspace
+*.js
+*.map
+tsconfig.json
